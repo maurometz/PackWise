@@ -10,7 +10,13 @@ import { searchOpenMeteoLocations } from './modules/weather/openMeteo.js';
 export function buildApp() {
   const app = Fastify({ logger: true });
 
-  app.register(cors, { origin: process.env.CLIENT_URL ?? 'http://localhost:5173' });
+  const allowedOrigins = (process.env.CLIENT_URL ?? 'http://localhost:5173').split(',').map((origin) => origin.trim()).filter(Boolean);
+  app.register(cors, {
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error(`Origin não autorizada: ${origin}`), false);
+    }
+  });
   app.register(sensible);
   app.register(jwt, { secret: process.env.JWT_SECRET ?? 'development-secret' });
 
