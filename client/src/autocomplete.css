@@ -1,0 +1,8 @@
+.location-autocomplete { position: relative; }
+.suggestions-list { position: absolute; z-index: 3; top: calc(100% + 5px); right: 0; left: 0; overflow: hidden; border: 1px solid #e1e6e1; border-radius: 12px; background: #fff; box-shadow: 0 14px 30px #26363a1c; }
+.suggestion { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; border-bottom: 1px solid #eef1ed; padding: 11px 12px; color: #526166; background: #fff; text-align: left; }
+.suggestion:last-child { border-bottom: 0; }
+.suggestion:hover { background: #f5f8f4; }
+.suggestion > span { display: grid; gap: 3px; }
+.suggestion strong { color: #27363a; font-size: 13px; font-weight: 600; }
+.suggestion small { color: #899596; font-size: 11px; }

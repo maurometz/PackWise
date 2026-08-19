@@ -1,0 +1,17 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: packwise-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: packwise
+      MYSQL_USER: packwise
+      MYSQL_PASSWORD: packwise
+    ports:
+      - "3307:3306"
+    volumes:
+      - packwise_mysql_data:/var/lib/mysql
+
+volumes:
+  packwise_mysql_data:

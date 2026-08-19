@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum TripType {
+  SOLO
+  GROUP
+}
+
+enum WeatherType {
+  EXTREME_COLD
+  BEACH_HOT
+  RAINY
+  MODERATE_MIXED
+}
+
+enum TransportType {
+  PLANE
+  CAR
+  BUS
+  TRAIN
+}
+
+enum TripRole {
+  ADMIN
+  MEMBER
+}
+
+enum ItemVisibility {
+  SHARED
+  PRIVATE
+  SECRET
+}
+
+enum ItemCategory {
+  DOCUMENTS_RESERVATIONS
+  CLOTHES_SHOES
+  ELECTRONICS_ACCESSORIES
+  HYGIENE_MEDICINE
+  LEISURE_SPECIFIC
+}
+
+model User {
+  id                 String        @id @default(cuid())
+  email              String        @unique
+  passwordHash       String
+  name               String
+  avatarUrl          String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  tripsOwned         Trip[]        @relation("TripOwner")
+  memberships        TripMember[]
+  checklistCreated   ChecklistItem[] @relation("ItemCreator")
+  checklistAssigned  ChecklistItem[] @relation("ItemAssignee")
+}
+
+model Trip {
+  id                    String             @id @default(cuid())
+  title                 String
+  destination           String
+  startDate             DateTime
+  endDate               DateTime
+  tripType              TripType
+  weatherType           WeatherType
+  transportType         TransportType
+  inviteCode            String             @unique
+  ownerId               String
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  owner                 User               @relation("TripOwner", fields: [ownerId], references: [id])
+  members               TripMember[]
+  items                 ChecklistItem[]
+  soloNote              SoloTravelNote?
+  categories            Category[]
+
+  @@index([ownerId])
+}
+
+model TripMember {
+  id        String   @id @default(cuid())
+  tripId    String
+  userId    String
+  role      TripRole @default(MEMBER)
+  joinedAt  DateTime @default(now())
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, userId])
+  @@index([userId])
+}
+
+model Category {
+  id        String          @id @default(cuid())
+  name      String
+  icon      String
+  key       ItemCategory
+  tripId    String
+  trip      Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  items     ChecklistItem[]
+
+  @@unique([tripId, key])
+}
+
+model ChecklistItem {
+  id                String         @id @default(cuid())
+  tripId            String
+  categoryId        String
+  title             String
+  quantity          Int            @default(1)
+  isPacked          Boolean        @default(false)
+  visibility        ItemVisibility  @default(SHARED)
+  assignedToUserId  String?
+  createdByUserId   String
+  checkedByUserId   String?
+  checkedAt         DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  trip              Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  category          Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdBy         User           @relation("ItemCreator", fields: [createdByUserId], references: [id])
+  assignedTo        User?          @relation("ItemAssignee", fields: [assignedToUserId], references: [id])
+
+  @@index([tripId, isPacked])
+  @@index([assignedToUserId])
+}
+
+model SoloTravelNote {
+  id                    String   @id @default(cuid())
+  tripId                String   @unique
+  emergencyContacts     Json?
+  flightDetails         Json?
+  accommodationDetails  Json?
+  notes                 String?  @db.Text
+  trip                  Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+}
