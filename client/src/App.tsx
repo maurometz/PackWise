@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-const API_URL = "http://localhost:3333";
+const API_URL = import.meta.env.VITE_API_URL;
 type User = { id: string; name: string; email: string };
 type Trip = {
   id: string;
