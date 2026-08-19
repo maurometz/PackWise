@@ -14,7 +14,11 @@ export function buildApp() {
   app.register(cors, {
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error(`Origin não autorizada: ${origin}`), false);
+      try {
+        const hostname = new URL(origin).hostname;
+        if (hostname.endsWith('.vercel.app')) return callback(null, true);
+      } catch { /* origin inválida será recusada abaixo */ }
+      return callback(null, false);
     }
   });
   app.register(sensible);
